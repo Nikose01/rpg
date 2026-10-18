@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071423">
+<title>Life RPG — твоя жизнь как игра</title>
+<style>
+:root{color-scheme:dark;--bg:#071423;--panel:#0c1d30;--line:#263e58;--text:#e9f1ff;--muted:#94a9c5;--gold:#ffc45e;--green:#58d68d;--red:#ff6679}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{border:1px solid #35516e;border-radius:9px;background:#142b43;color:var(--text);padding:10px 12px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--gold);color:#142033;border-color:var(--gold);font-weight:750}.danger{border-color:#73404a;color:#ffabb5}.wrap{max-width:1180px;margin:auto;padding:18px}.header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-weight:900;font-size:24px;letter-spacing:.4px}.gold{color:var(--gold)}.muted{color:var(--muted);font-size:12px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px;margin-top:13px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:13px}.stat{background:#10253b;padding:12px;border-radius:10px}.stat b{display:block;font-size:20px;margin-top:3px}.bar{height:9px;background:#253950;border-radius:10px;overflow:hidden;margin:8px 0}.bar span{display:block;height:100%;background:linear-gradient(90deg,#f3ad49,#ffdc7a);border-radius:10px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.tabs button.active{background:var(--gold);color:#142033;border-color:var(--gold)}.section{display:none}.section.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.field{display:grid;gap:5px;margin-top:10px;min-width:0}.field label{font-size:12px;color:#afc0d7}.field input,.field select{width:100%;min-width:0;border:1px solid #35516e;border-radius:8px;padding:10px;background:#071423;color:var(--text)}.full{grid-column:1/-1}.item{padding:12px 0;border-bottom:1px solid #263b51}.item:last-child{border-bottom:0}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.rowstart{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.name{font-weight:700;overflow-wrap:anywhere}.xp{white-space:nowrap;color:var(--gold);font-weight:750;font-size:13px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.notice{font-size:12px;color:var(--muted);margin-top:9px}.enemy{background:radial-gradient(ellipse at top,#38202b,#0c1d30 75%);border:1px solid #68434b;border-radius:12px;padding:16px;text-align:center}.face{font-size:58px}.enemyname{font-size:22px;font-weight:850}.hide{display:none!important}.pill{border-radius:999px;background:#1b3048;padding:3px 8px;font-size:11px;color:#b9cce5}.success{color:var(--green)}.error{color:var(--red)}.footer{padding:18px 2px;color:var(--muted);font-size:12px}.small{font-size:12px;color:var(--muted)}.empty{padding:12px 0;color:var(--muted);font-size:13px}
+@media(min-width:760px){.cols{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}.cols .panel{margin-top:13px}}@media(max-width:430px){.wrap{padding:12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.full{grid-column:auto}.brand{font-size:21px}}
+</style>
+</head>
+<body><main class="wrap" id="app">
+<header class="header"><div><div class="muted">ТВОЯ ЖИЗНЬ — ТВОЙ УРОВЕНЬ</div><div class="brand">LIFE <span class="gold">RPG</span></div><div class="muted">Персональная система прогресса</div></div><div style="text-align:right"><div class="muted" id="todayLabel">Сегодня</div><b id="clock">--:--:--</b></div></header>
+<div class="stats">
+<div class="stat"><span class="muted">Уровень</span><b id="level">1</b><div class="bar"><span id="levelBar" style="width:0%"></span></div><span class="muted" id="levelXP">0 / 100 XP</span></div>
+<div class="stat"><span class="muted">Общий опыт</span><b id="totalXP">0 XP</b></div>
+<div class="stat"><span class="muted">Жизни</span><b id="lives">❤️❤️❤️❤️❤️</b></div>
+<div class="stat"><span class="muted">Поражения подряд</span><b id="losses">0 / 2</b></div>
+</div>
+<div class="tabs">
+<button class="active" data-tab="today">Сегодня</button><button data-tab="repeat">Шаблоны квестов</button><button data-tab="missions">Великие миссии</button><button data-tab="history">История</button><button data-tab="settings">Настройки</button>
+</div>
+<section class="section active" id="today">
+<div class="cols">
+<div>
+<div class="panel">
+<div class="row"><h3 style="margin:0">Ежедневные квесты</h3><span class="pill" id="questCount">0 выполнено</span></div>
+<form id="questForm">
+<div class="field"><label for="qName">Название квеста</label><input id="qName" maxlength="120" required placeholder="Например, прочитать 20 страниц"></div>
+<div class="grid"><div class="field"><label for="qImp">Важность</label><select id="qImp"><option value="1">1 — небольшая</option><option value="2">2</option><option value="3" selected>3 — средняя</option><option value="4">4</option><option value="5">5 — высокая</option></select></div>
+<div class="field"><label for="qDiff">Сложность</label><select id="qDiff"><option value="1">1 — легко</option><option value="2">2</option><option value="3" selected>3 — средняя</option><option value="4">4</option><option value="5">5 — сложно</option></select></div>
+<div class="field"><label for="qStat">Характеристика</label><select id="qStat"><option value="0">Сила</option><option value="1">Интеллект</option><option value="2">Дисциплина</option></select></div>
+<div class="field"><label for="qMission">Продвигает миссию</label><select id="qMission"><option value="">Без миссии</option></select></div></div>
+<div class="field"><label><input id="qRecurring" type="checkbox" style="width:auto"> Повторять ежедневно автоматически</label></div>
+<div class="actions"><button class="primary" type="submit">Добавить квест</button></div><p class="notice">XP = 10 × важность × сложность. Повторяющийся квест сохраняется как шаблон и появляется в новом дне автоматически.</p>
+</form></div>
+<div class="panel"><div class="row"><h3 style="margin:0">Квесты на сегодня</h3><span class="muted" id="dayProgress"></span></div><div id="questList"></div><div class="actions"><button id="finishDay" class="primary">Завершить день</button><button id="newDay" class="hide">Открыть следующий день</button></div><p class="notice" id="dayMessage">Незавершённые задания не переносятся как выполненные.</p></div>
+</div>
+<div>
+<div class="panel"><div class="row"><h3 style="margin:0">Враг дня</h3><span class="gold" id="dayNum">День 1</span></div><div class="enemy" style="margin-top:10px"><div id="enemyFace" class="face">👹</div><div class="muted" id="enemyType">ЕЖЕДНЕВНЫЙ ВРАГ</div><div id="enemyName" class="enemyname">Теневой гоблин</div><p class="muted" id="enemyDesc">Набери XP, чтобы победить.</p><div class="row"><span>HP врага</span><b id="enemyHP">100 / 100</b></div><div class="bar"><span id="enemyBar" style="width:100%;background:linear-gradient(90deg,#ed475c,#ff8c70)"></span></div><div class="row"><span class="muted">Урон через квесты</span><b class="gold" id="damage">0 XP</b></div><div class="bar"><span id="battleBar" style="width:0%"></span></div><div class="row"><span class="muted">Нужно набрать</span><b id="targetXP">100 XP</b></div><div class="muted" id="remainingXP">Осталось 100 XP</div><p id="battleResult" class="gold"></p></div><p class="notice" id="battleRule">Обычный враг требует 100 XP. На каждый 10-й день появляется босс с 500 XP.</p></div>
+<div class="panel"><h3 style="margin-top:0">Характеристики</h3><div class="grid"><div class="stat"><span class="muted">Сила</span><b id="stat0">0</b></div><div class="stat"><span class="muted">Интеллект</span><b id="stat1">0</b></div><div class="stat"><span class="muted">Дисциплина</span><b id="stat2">0</b></div><div class="stat"><span class="muted">Потеря уровней</span><b id="drops">0</b></div></div><p class="notice">Два поражения подряд снимают один уровень (минимум — 1) и сбрасывают серию поражений. Победа сбрасывает серию. Победа над боссом возвращает 1 жизнь; если жизни кончились — минус уровень и жизни восстанавливаются.</p></div>
+</div></div>
+</section>
+<section class="section" id="repeat"><div class="panel"><h3 style="margin-top:0">Повторяющиеся квесты</h3><p class="notice">Изменение шаблона влияет на будущие дни. Уже созданные квесты текущего дня остаются без изменений.</p><div id="recurringList"></div></div></section>
+<section class="section" id="missions"><div class="panel"><h3 style="margin-top:0">Создать великую миссию</h3><form id="missionForm"><div class="field"><label for="mName">Название</label><input id="mName" required maxlength="120" placeholder="Например, освоить английский"></div><div class="field"><label for="mDesc">Измеримый результат</label><input id="mDesc" maxlength="200" placeholder="Как поймёшь, что достиг цели?"></div><div class="grid"><div class="field"><label for="mH">Срок</label><select id="mH"><option value="30">1 месяц ×1</option><option value="90">3 месяца ×2</option><option value="180">6 месяцев ×3</option><option value="365">1 год ×5</option><option value="1825">5 лет ×10</option></select></div><div class="field"><label for="mTarget">Цель прогресса в XP</label><input id="mTarget" type="number" min="10" max="10000000" step="10" value="1000" required></div><div class="field"><label for="mImp">Важность</label><select id="mImp"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div><div class="field"><label for="mDiff">Сложность</label><select id="mDiff"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div></div><div class="actions"><button class="primary">Создать миссию</button></div></form></div><div class="panel"><h3 style="margin-top:0">Твои миссии</h3><div id="missionList"></div></div></section>
+<section class="section" id="history"><div class="panel"><h3 style="margin-top:0">История дней и боёв</h3><div id="historyList"></div></div></section>
+<section class="section" id="settings"><div class="panel"><h3 style="margin-top:0">Настройки времени и данных</h3><p class="notice">Новый день наступает в 00:00 по локальному времени устройства. Таймер обновляется каждую секунду; при возвращении в приложение пропущенные дни обрабатываются по сохранённым датам. Для защиты от повторной выдачи наград завершение дня фиксируется один раз.</p><div class="field"><label for="dayTime">Часовой пояс устройства</label><input id="dayTime" readonly></div><div class="actions"><button id="export">Экспортировать резервную копию JSON</button><label for="importFile" style="align-self:center"><span class="pill">Импорт резервной копии</span></label><input id="importFile" type="file" accept="application/json,.json" class="hide"></div><p class="notice">Резервная копия полезна перед сменой устройства или очисткой данных Safari.</p><button class="danger" id="resetAll">Удалить весь прогресс</button><p class="notice">Данные хранятся локально в браузере. Очистка данных сайта может удалить сохранение; файл сам по себе не является облачной синхронизацией.</p></div></section>
+<div id="saveWarn" class="panel error hide">⚠️ Не удаётся сохранить данные в браузере (приватный режим или нет места). Сделай резервную копию в «Настройках».</div><div class="footer">Life RPG · локальный прототип. Не закрывай день дважды: награды фиксируются автоматически и повторно не начисляются.</div>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), STORE='lifeRPG.standalone.v1';
+const names=[['👹','Теневой гоблин'],['🐺','Лунный волк'],['🧟','Болотный зомби'],['🦂','Пустынный скорпион'],['👻','Призрак прокрастинации'],['🐲','Малый дракон'],['🧌','Каменный тролль'],['🦇','Ночной охотник'],['🐍','Ядовитый василиск']];
+const bossNames=[['🐉','Древний дракон'],['👿','Повелитель хаоса'],['💀','Король теней']];
+const horizons={30:1,90:2,180:3,365:5,1825:10};
+const iso=(date=new Date())=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const blank=()=>({version:1,xp:0,level:1,stats:[0,0,0],lives:5,lossStreak:0,levelDrops:0,dayNo:1,lastDate:iso(),seq:1,templates:[],quests:[],missions:[],history:[],battle:{date:iso(),enemy:null,earned:0,settled:false,result:null}});
+let s=blank(),saveError=false;
+function validState(x){return x&&x.version===1&&Number.isFinite(x.xp)&&Array.isArray(x.quests)&&Array.isArray(x.templates)&&Array.isArray(x.missions)&&x.battle&&Array.isArray(x.stats)}
+function normalize(x){const r=Object.assign(blank(),x);r.battle=Object.assign({date:iso(),enemy:null,earned:0,settled:false,result:null},x.battle);r.stats=[0,1,2].map(i=>Number(x.stats[i])||0);['history','templates','quests','missions'].forEach(k=>{if(!Array.isArray(r[k]))r[k]=[]});r.lives=Math.max(0,Math.min(5,Number.isFinite(r.lives)?r.lives:5));r.lossStreak=Number(r.lossStreak)||0;r.levelDrops=Number(r.levelDrops)||0;r.dayNo=Math.max(1,Number(r.dayNo)||1);r.xp=Math.max(0,r.xp);const ids=[0,...r.quests,...r.templates,...r.missions].map(o=>+o.id||0);r.seq=Math.max(+r.seq||1,Math.max(...ids)+1);if(!r.battle.enemy)r.battle.enemy=makeEnemy(r.dayNo,r.battle.date);r.lastDate=r.battle.date;return r}
+try{const raw=localStorage.getItem(STORE);if(raw){const parsed=JSON.parse(raw);if(validState(parsed))s=normalize(parsed);}}catch(e){saveError=true}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(s));saveError=false}catch(e){saveError=true}}
+function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function nextId(){return s.seq++}
+function levelFromXP(){return Math.max(1,Math.floor(s.xp/100)+1)}
+function qxp(q){return 10*Number(q.imp)*Number(q.diff)}
+function missionReward(m){return 10*m.imp*m.diff*(horizons[m.h]||1)}
+function getMission(id){return s.missions.find(m=>m.id===id)}
+function makeEnemy(day,date){let boss=day%10===0,choice=boss?bossNames[(Math.floor(day/10)-1)%bossNames.length]:names[(day*7+3)%names.length],target=boss?500:100;return {name:choice[1],face:choice[0],boss,target,hp:target,date}}
+function ensureBattle(date){if(!s.battle||s.battle.date!==date){s.battle={date,enemy:makeEnemy(s.dayNo,date),earned:0,settled:false,result:null};s.quests=s.templates.filter(t=>t.active).map(t=>({...t,id:nextId(),templateId:t.id,done:false,day:date}));s.lastDate=date;}}
+function addHistory(entry){s.history.unshift(entry);s.history=s.history.slice(0,500)}
+function dropLevel(){if(levelFromXP()>1){s.xp=Math.max(0,s.xp-100);s.levelDrops++}s.level=levelFromXP()}
+function resolveDay(){
+ const b=s.battle;if(b.settled)return;
+ const win=b.earned>=b.enemy.target;
+ if(win){b.enemy.hp=0;s.lossStreak=0;b.result='Победа';if(b.enemy.boss&&s.lives<5)s.lives++;}
+ else{b.result='Поражение';s.lives=Math.max(0,s.lives-1);s.lossStreak++;let drop=false;if(s.lossStreak>=2){drop=true;s.lossStreak=0}if(s.lives===0){drop=true;s.lives=5;b.gameOver=true}if(drop)dropLevel()}
+ b.settled=true;addHistory({date:b.date,day:s.dayNo,enemy:b.enemy.name,boss:b.enemy.boss,result:b.result,earned:b.earned,target:b.enemy.target,lives:s.lives,level:levelFromXP(),gameOver:!!b.gameOver});
+}
+function settleDay(){resolveDay();save();render()}
+function rollDays(){
+ const now=iso();if(!s.lastDate)s.lastDate=now;
+ if(s.battle.date!==s.lastDate){s.lastDate=s.battle.date||now;}
+ let cursor=s.battle.date||s.lastDate;
+ if(cursor===now)return;
+ let old=new Date(cursor+'T12:00:00'),end=new Date(now+'T12:00:00');
+ let steps=Math.max(0,Math.min(400,Math.round((end-old)/86400000)));
+ for(let i=0;i<steps;i++){
+   if(!s.battle.settled)settleDaySilent();
+   s.dayNo++;let nd=new Date(old);nd.setDate(nd.getDate()+1);old=nd;let date=iso(nd);
+   s.battle={date,enemy:makeEnemy(s.dayNo,date),earned:0,settled:false,result:null};
+   s.quests=s.templates.filter(t=>t.active).map(t=>({...t,id:nextId(),templateId:t.id,done:false,day:date}));s.lastDate=date;
+ }
+ if(steps===0&&s.battle.date!==now){s.battle.date=now;s.battle.enemy=makeEnemy(s.dayNo,now);s.quests=s.templates.filter(t=>t.active).map(t=>({...t,id:nextId(),templateId:t.id,done:false,day:now}));s.lastDate=now;}
+ save();
+}
+function settleDaySilent(){resolveDay()}
+function completeQuest(id){let q=s.quests.find(x=>x.id===id);if(!q||q.done||s.battle.settled)return;q.done=true;let amount=qxp(q);s.xp+=amount;s.battle.earned+=amount;s.stats[q.stat]++;let m=getMission(q.mid);if(m&&!m.done)m.progress=Math.min(m.target,m.progress+amount);s.level=levelFromXP();if(q.templateId){let t=s.templates.find(x=>x.id===q.templateId);if(t)t.lastCompleted=s.battle.date;}save();render()}
+function left(m){if(!m.created||m.done)return '';let d=m.h-Math.floor((new Date(iso()+'T12:00:00')-new Date(m.created+'T12:00:00'))/86400000);return d>=0?' (осталось '+d+' дн.)':' (срок истёк)'}
+function render(){
+ let b=s.battle,e=b.enemy||makeEnemy(s.dayNo,b.date),level=levelFromXP();s.level=level;
+ $('todayLabel').textContent=new Date().toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'});
+ $('level').textContent=level;$('totalXP').textContent=s.xp+' XP';$('levelBar').style.width=(s.xp%100)+'%';$('levelXP').textContent=(s.xp%100)+' / 100 XP';
+ $('lives').textContent='❤️'.repeat(s.lives)+'🖤'.repeat(5-s.lives);$('losses').textContent=s.lossStreak+' / 2';$('drops').textContent=s.levelDrops;
+ s.stats.forEach((v,i)=>$('stat'+i).textContent=v);
+ $('dayNum').textContent='День '+s.dayNo+(e.boss?' · БОСС':'');$('enemyFace').textContent=e.face;$('enemyType').textContent=e.boss?'БОСС КАЖДЫЙ 10-Й ДЕНЬ':'ЕЖЕДНЕВНЫЙ ВРАГ';$('enemyName').textContent=e.name;
+ $('enemyDesc').textContent=e.boss?'Босс требует в пять раз больше XP, чем обычный враг.':'Каждый заработанный XP наносит 1 урон.';
+ $('enemyHP').textContent+='';
+ $('enemyHP').textContent=Math.max(0,e.target-b.earned)+' / '+e.target;$('enemyBar').style.width=Math.max(0,100-b.earned/e.target*100)+'%';$('damage').textContent=b.earned+' XP';$('battleBar').style.width=Math.min(100,b.earned/e.target*100)+'%';$('targetXP').textContent=e.target+' XP';$('remainingXP').textContent='Осталось '+Math.max(0,e.target-b.earned)+' XP';
+ $('battleResult').textContent=b.settled?(b.result==='Победа'?'ПОБЕДА — враг повержен!'+(e.boss?' Награда за босса: +1 жизнь.':''):'ПОРАЖЕНИЕ — потеряна жизнь.'+(b.gameOver?' Жизни закончились: −1 уровень, жизни восстановлены.':'')):b.earned>=e.target?'Враг повержен! Зафиксируй результат кнопкой «Завершить день».':'';
+ $('battleRule').textContent=e.boss?'Босс: '+e.target+' XP. Обычный враг: 100 XP.':'Цель: 100 XP. Босс появляется на днях 10, 20, 30 и требует 500 XP.';
+ $('finishDay').classList.toggle('hide',b.settled);$('newDay').classList.toggle('hide',!b.settled);$('dayMessage').textContent=b.settled?'День закрыт. Результат уже зафиксирован; награды повторно не начисляются.':'Выполненные квесты дают XP и урон. День закрывается один раз.';
+ $('questCount').textContent=s.quests.filter(q=>q.done).length+' / '+s.quests.length+' выполнено';
+ const missionSelect=$('qMission'),selected=missionSelect.value;missionSelect.innerHTML='<option value="">Без миссии</option>'+s.missions.filter(m=>!m.done).map(m=>`<option value="${m.id}">${escapeHTML(m.name)}</option>`).join('');if(s.missions.some(m=>String(m.id)===selected&&!m.done))missionSelect.value=selected;
+ $('questList').innerHTML=s.quests.length?s.quests.map(q=>`<div class="item"><div class="rowstart"><div><div class="name">${q.done?'✓ ':''}${escapeHTML(q.name)}</div><div class="muted">${['Сила','Интеллект','Дисциплина'][q.stat]} · важность ${q.imp} · сложность ${q.diff}${getMission(q.mid)?' · '+escapeHTML(getMission(q.mid).name):''}${q.templateId?' · <span class="success">ежедневный</span>':''}</div></div><b class="xp">+${qxp(q)} XP</b></div><div class="actions">${!q.done&&!b.settled?`<button class="primary" data-done="${q.id}">Выполнить</button>`:''}${!q.done&&!q.templateId&&!b.settled?`<button data-repeat="${q.id}">Сделать ежедневным</button>`:''}${!q.done&&!b.settled?`<button data-remove="${q.id}">Удалить</button>`:''}</div></div>`).join(''):'<div class="empty">На сегодня квестов нет. Добавь задание или включи повторение у шаблона.</div>';
+ $('recurringList').innerHTML=s.templates.length?s.templates.map(t=>`<div class="item"><div class="rowstart"><div><div class="name">${escapeHTML(t.name)}</div><div class="muted">XP ${qxp(t)} · ${['Сила','Интеллект','Дисциплина'][t.stat]}${getMission(t.mid)?' · '+escapeHTML(getMission(t.mid).name):''}</div></div><span class="pill">${t.active?'Активен':'На паузе'}</span></div><div class="actions"><button data-toggle-template="${t.id}">${t.active?'Поставить на паузу':'Возобновить'}</button><button data-edit-template="${t.id}">Изменить</button><button class="danger" data-delete-template="${t.id}">Удалить шаблон</button></div></div>`).join(''):'<div class="empty">Здесь появятся шаблоны после отметки «Повторять ежедневно» при создании квеста или кнопки «Сделать ежедневным».</div>';
+ $('missionList').innerHTML=s.missions.length?s.missions.map(m=>{let p=Math.min(100,Math.floor(100*m.progress/m.target));return `<div class="item"><div class="rowstart"><div><div class="name">${m.done?'✓ ':''}${escapeHTML(m.name)}</div><div class="muted">${escapeHTML(m.desc||'Великая миссия')} · срок ${m.h} дней${left(m)} · важность ${m.imp} · сложность ${m.diff}</div></div><b class="xp">+${missionReward(m)} XP</b></div><div class="row" style="margin-top:9px"><span class="gold">${p}%</span><span class="muted">${Math.min(m.progress,m.target)} / ${m.target} XP прогресса</span></div><div class="bar"><span style="width:${p}%;background:#ad7cff"></span></div><div class="actions">${!m.done&&p>=100?`<button class="primary" data-finish-mission="${m.id}">Завершить миссию</button>`:''}<button class="danger" data-delete-mission="${m.id}">Удалить</button></div></div>`}).join(''):'<div class="empty">Пока нет великих миссий.</div>';
+ $('historyList').innerHTML=s.history.length?s.history.map(h=>`<div class="item"><div class="row"><b>${escapeHTML(h.date)} · День ${h.day}${h.boss?' · БОСС':''}</b><span class="${h.result==='Победа'?'success':'error'}">${h.result}</span></div><div class="muted">${escapeHTML(h.enemy)} · ${h.earned}/${h.target} XP · жизней: ${h.lives} · уровень: ${h.level}${h.gameOver?' · 💀 жизни кончились: −1 уровень, жизни восстановлены':''}</div></div>`).join(''):'<div class="empty">История появится после первого завершённого дня.</div>';
+ $('dayTime').value=Intl.DateTimeFormat().resolvedOptions().timeZone||'Локальное время устройства';
+ $('questForm').querySelector('.primary').disabled=b.settled;save();$('saveWarn').classList.toggle('hide',!saveError);
+}
+$('questForm').addEventListener('submit',ev=>{ev.preventDefault();if(s.battle.settled)return;let name=$('qName').value.trim();if(!name)return;let q={id:nextId(),name,imp:+$('qImp').value,diff:+$('qDiff').value,stat:+$('qStat').value,mid:$('qMission').value?+$('qMission').value:null,done:false,day:s.battle.date};s.quests.push(q);if($('qRecurring').checked){let tid=nextId();s.templates.push({id:tid,name:q.name,imp:q.imp,diff:q.diff,stat:q.stat,mid:q.mid,active:true,lastCompleted:null,template:true});q.templateId=tid;} $('qName').value='';$('qRecurring').checked=false;save();render()});
+$('missionForm').addEventListener('submit',ev=>{ev.preventDefault();let name=$('mName').value.trim(),target=+$('mTarget').value;if(!name||!Number.isFinite(target)||target<10||target>10000000)return; s.missions.unshift({id:nextId(),created:iso(),name,desc:$('mDesc').value.trim(),h:+$('mH').value,target,progress:0,imp:+$('mImp').value,diff:+$('mDiff').value,done:false});$('mName').value='';$('mDesc').value='';save();render()});
+$('finishDay').addEventListener('click',()=>{if(s.battle.earned<s.battle.enemy.target&&!confirm('Цель по XP не набрана. Закрыть день и засчитать поражение?'))return;settleDay()});
+$('newDay').addEventListener('click',()=>{if(!s.battle.settled)return;let date=iso();if(date===s.battle.date){alert('Новый день ещё не наступил. Квесты обновятся в 00:00 по времени устройства.');return;}rollDays();render()});
+rootClick();
+function rootClick(){ $('app').addEventListener('click',ev=>{let btn=ev.target.closest('button');if(!btn)return;
+ if(btn.dataset.tab){document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.tab));}
+ if(btn.dataset.done)completeQuest(+btn.dataset.done);
+ if(btn.dataset.repeat){let q=s.quests.find(x=>x.id===+btn.dataset.repeat);if(q&&!q.templateId){let tid=nextId();s.templates.push({id:tid,name:q.name,imp:q.imp,diff:q.diff,stat:q.stat,mid:q.mid,active:true,lastCompleted:null,template:true});q.templateId=tid;save();render();}}
+ if(btn.dataset.remove){let id=+btn.dataset.remove;s.quests=s.quests.filter(q=>q.id!==id);save();render();}
+ if(btn.dataset.toggleTemplate){let t=s.templates.find(x=>x.id===+btn.dataset.toggleTemplate);if(t){t.active=!t.active;save();render();}}
+ if(btn.dataset.editTemplate){let t=s.templates.find(x=>x.id===+btn.dataset.editTemplate);if(t){let n=prompt('Название ежедневного квеста:',t.name);if(n===null)return;n=n.trim();if(!n){alert('Название не может быть пустым.');return;}t.name=n;let imp=prompt('Важность от 1 до 5:',t.imp);if(imp===null)return;let diff=prompt('Сложность от 1 до 5:',t.diff);if(diff===null)return;t.imp=Math.max(1,Math.min(5,parseInt(imp)||t.imp));t.diff=Math.max(1,Math.min(5,parseInt(diff)||t.diff));save();render();}}
+ if(btn.dataset.deleteTemplate){if(!confirm('Удалить ежедневный шаблон? Уже созданные квесты не изменятся.'))return;let tid=+btn.dataset.deleteTemplate;s.quests.forEach(q=>{if(q.templateId===tid)q.templateId=null});s.templates=s.templates.filter(t=>t.id!==tid);save();render();}
+ if(btn.dataset.finishMission){let m=getMission(+btn.dataset.finishMission);if(m&&!m.done&&m.progress>=m.target){m.done=true;s.xp+=missionReward(m);s.level=levelFromXP();save();render();}}
+ if(btn.dataset.deleteMission){let id=+btn.dataset.deleteMission;if(!confirm('Удалить миссию? Связанные квесты останутся, но будут отвязаны.'))return;s.quests.forEach(q=>{if(q.mid===id)q.mid=null});s.templates.forEach(t=>{if(t.mid===id)t.mid=null});s.missions=s.missions.filter(m=>m.id!==id);save();render();}
+ });}
+$('resetAll').addEventListener('click',()=>{if(!confirm('Точно удалить весь прогресс? Это действие нельзя отменить.'))return; s=blank();s.battle={date:iso(),enemy:makeEnemy(1,iso()),earned:0,settled:false,result:null};save();render()});
+$('export').addEventListener('click',async()=>{const name='life-rpg-backup-'+iso()+'.json',blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'});let dl=null;try{dl=window.claude&&await window.claude.use('downloads')}catch(e){}
+ if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(!e||e.code!=='declined')alert('Не удалось сохранить файл.')}return}
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},1500)});
+$('importFile').addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!validState(x))throw Error('bad');if(!confirm('Заменить текущий прогресс данными из резервной копии?'))return;s=normalize(x);rollDays();save();render();}catch(e){alert('Файл не похож на резервную копию Life RPG. Текущий прогресс не изменён.')}ev.target.value=''});
+function tick(){let now=new Date();$('clock').textContent=now.toLocaleTimeString('ru-RU');let current=iso();if(current!==s.battle.date){rollDays();render()} }
+try{if(!s.battle.enemy)s.battle.enemy=makeEnemy(s.dayNo,s.battle.date||iso());rollDays();render();tick();setInterval(tick,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});window.addEventListener('pageshow',tick);}catch(e){console.error(e);alert('Не удалось загрузить сохранение. Экспортируй резервную копию, если она есть, и перезагрузи приложение.')}
+})();
+</script>
+</body></html>
